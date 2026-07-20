@@ -1,3 +1,3 @@
-## Issue: Docker daemon failed to start or connect.
-## Fix: `sudo systemctl restart docker`
-## Context: /Users/rahulphoolbhati/I-Have-Seen-This/code_librarian (Linux environment assumed)
+## Issue: Cannot restart a non-existent Docker container
+## Fix: `docker restart One-Impression-Cloud`
+## Context: `/Users/rahulphoolbhati/.claude/commands`

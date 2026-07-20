@@ -35,6 +35,13 @@ class CodeLibrarian():
             config=self.agents_config['distiller'], # type: ignore[index]
             verbose=True
         )
+    
+    @agent
+    def pattern_expert(self) -> Agent:
+        return Agent(
+            config=self.agents_config["pattern_expert"],
+            verbose=True
+        )
 
 
     # To learn more about structured task outputs,
@@ -60,7 +67,15 @@ class CodeLibrarian():
             output_file='distillation_task.md'
         )
         
-    
+    @task
+    def generate_patterns_task(self) -> Task:
+        return Task(
+            config=self.tasks_config['generate_patterns_task'],
+            agent=self.pattern_expert(),
+            # This is the "Baton Pass" - It gives the output of Task 1 to Task 2
+            context=[self.distillation_task()],
+            output_file='pattern_task.md'
+        )
 
     @crew
     def crew(self) -> Crew:

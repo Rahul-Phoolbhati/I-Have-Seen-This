@@ -18,17 +18,14 @@ def run():
     Run the crew.
     """
     
-    print( " rtun me aaya ")
-    # inputs = {
-    #     'topic': 'AI LLMs',
-    #     'current_year': str(datetime.now().year)
-    # }
     args = sys.argv[1:]
-    
-    
+
     if len(args) >= 2:
         chat_history = args[0]
         project_path = args[1]
+    else:
+        chat_history = ""
+        project_path = "unknown"
     inputs = {
         'chat_history': chat_history,
         'project_path': project_path

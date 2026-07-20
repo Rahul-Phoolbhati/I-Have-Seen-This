@@ -74,6 +74,7 @@ def parse_transcript(file_path):
                 
     return "\n".join(cleaned_messages)
 
+chat_for_agent = ""
 transcript_path = find_transcript(session_id)
 if transcript_path:
     log.info(f"Transcript  : {transcript_path}")
@@ -87,6 +88,10 @@ else:
 if chat_for_agent:
     script_dir = Path(__file__).parent
     sys.path.append(str(script_dir / "src"))
+    
+    output_file = script_dir / "chat_for_agent.txt"
+    with open(output_file, "w") as f:
+        f.write(str(chat_for_agent))
 
     # Now this should work
     from code_librarian.crew import CodeLibrarian
@@ -106,6 +111,46 @@ if chat_for_agent:
     log.info(f"🤖 AGENT RESPONSE RECEIVED:")
     log.info(result.raw) # This is the Markdown note the agent made
     log.info("-------------------------------------------")
+
+    # ── Parse outputs & persist to LanceDB ────────────────────────────────
+    # The pattern expert already received the Golden Fix via crewAI context
+    # (no file re-read needed). We pull the in-memory task outputs from `result`:
+    #   tasks_output[0] = distiller (Golden Fix)
+    #   tasks_output[1] = pattern expert (JSON metadata)
+    try:
+        from code_librarian.tools.lancedb_store import store_entry
+        from code_librarian.bridge_parse import parse_pattern_text, parse_distillation_text
+
+        distill_text = ""
+        pattern_text = ""
+        if getattr(result, "tasks_output", None):
+            if len(result.tasks_output) > 0:
+                distill_text = result.tasks_output[0].raw or ""
+            if len(result.tasks_output) > 1:
+                pattern_text = result.tasks_output[1].raw or ""
+
+        pattern = parse_pattern_text(pattern_text)
+        distillation = parse_distillation_text(distill_text)
+
+        # Fall back to the .md files (kept for your viewing) if parse is empty.
+        if not distillation and (script_dir / "distillation_task.md").exists():
+            distillation = parse_distillation_text(
+                (script_dir / "distillation_task.md").read_text(encoding="utf-8", errors="ignore")
+            )
+
+        rid = store_entry(
+            issue=distillation.get("issue", ""),
+            fix=distillation.get("fix", ""),
+            summary=pattern.get("summary", ""),
+            tags=pattern.get("tags", []),
+            search_queries=pattern.get("search_queries", []),
+            error_code=pattern.get("error_code", ""),
+            project_path=project_dir,
+            session_id=session_id,
+        )
+        log.info(f"💾 Persisted to LanceDB (id: {rid})")
+    except Exception as e:
+        log.error(f"Failed to persist to LanceDB: {e}")
 
     log.info("Final bridge cleanup...")
     log.info("Done ✅")

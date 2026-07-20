@@ -27,3 +27,36 @@ distillation_task:
     ## Fix: [The working code/command]
     ## Context: [The project path or tech stack]
   agent: distiller
+
+# generate_patterns_task:
+#   description: >
+#     1. Review the 'Golden Fix' extracted by the Distiller Agent.
+#     2. Cross-reference this fix with the original raw chat transcript: {chat_history}.
+#     3. Identify the specific 'Pain Points' (e.g., the exact error message the user pasted).
+#     4. Generate a 'Search Strategy' consisting of:
+#        - 5-8 Search Queries (ranging from specific error codes to general concepts).
+#        - A 'Short Summary' (one sentence) for quick browsing.
+#        - A list of Technical Tags (technologies, libraries, and platforms involved).
+    
+#     The user's project context is: {project_path}.
+#   expected_output: >
+#     A structured JSON object with the following keys:
+#     "search_queries": [list of strings],
+#     "tags": [list of strings],
+#     "summary": "string",
+#     "primary_technology": "string",
+#     "identified_error_code": "string or null"
+#   agent: pattern_expert
+
+
+generate_patterns_task:
+  description: >
+    Review the technical fix provided by the previous task. 
+    1. Create 5 varied search queries based ONLY on this fix.
+    2. Generate technical tags for a database.
+    3. Write a one-sentence summary.
+  expected_output: >
+    A JSON object with keys: "search_queries", "tags", "summary".
+  # CRITICAL: Do NOT add {chat_history} here. 
+  # This task now only receives the small "Golden Fix" string.
+  agent: pattern_expert

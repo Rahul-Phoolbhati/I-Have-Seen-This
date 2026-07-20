@@ -1,3 +1,9 @@
 .env
 __pycache__/
 .DS_Store
+CLAUDE.md
+chat_for_agent.txt
+distillation_task.md
+distillation_task copy.md
+pattern_task.md
+*.copy.md
